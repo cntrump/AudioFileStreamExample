@@ -53,7 +53,7 @@
 #include <pthread.h>
 #include <AudioToolbox/AudioToolbox.h>
 
-#define PRINTERROR(LABEL)	printf("%s err %4.4s %ld\n", LABEL, (char *)&err, err)
+#define PRINTERROR(LABEL)	printf("%s err %4.4s %ld\n", LABEL, (char *)&err, (long)err)
 
 const int port = 51515;			// the port we will use
 
@@ -135,7 +135,7 @@ int main (int argc, char * const argv[])
 		if (bytesRecvd <= 0) break; // eof or failure
 		
 		// parse the data. this will call MyPropertyListenerProc and MyPacketsProc
-		err = AudioFileStreamParseBytes(myData->audioFileStream, bytesRecvd, buf, 0);
+		err = AudioFileStreamParseBytes(myData->audioFileStream, (UInt32)bytesRecvd, buf, 0);
 		if (err) { PRINTERROR("AudioFileStreamParseBytes"); break; }
 	}
 
@@ -286,8 +286,8 @@ OSStatus MyEnqueueBuffer(MyData* myData)
 	
 	// enqueue buffer
 	AudioQueueBufferRef fillBuf = myData->audioQueueBuffer[myData->fillBufferIndex];
-	fillBuf->mAudioDataByteSize = myData->bytesFilled;		
-	err = AudioQueueEnqueueBuffer(myData->audioQueue, fillBuf, myData->packetsFilled, myData->packetDescs);
+	fillBuf->mAudioDataByteSize = (UInt32)myData->bytesFilled;
+	err = AudioQueueEnqueueBuffer(myData->audioQueue, fillBuf, (UInt32)myData->packetsFilled, myData->packetDescs);
 	if (err) { PRINTERROR("AudioQueueEnqueueBuffer"); myData->failed = true; return err; }		
 	
 	StartQueueIfNeeded(myData);
